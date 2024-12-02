@@ -1,0 +1,188 @@
+---
+title: "GVPT 729B Final Project"
+echo: false
+---
+
+My github page for this project [here](https://github.com/igibson1/GVPT-729B/tree/main/Final%20Project)
+
+My final project aims to analyze media framing and sentiment in coverage of BLM protest. This project does the following:
+
+1.  Identify common words/themes across a variety of articles gathered from NewsAPI.
+2.  Visualize the words/themes with word clouds and bar plots
+3.  Conduct a sentiment analysis to provide insights into the tone of the articles overall, negative or positive.
+
+With my account with NewsAPI I gather multiple articles related to "Black Lives Matter protests". To prepare the text data for analysis, I combine the title, description, and content fields from the articles into a single column called text for analysis.
+
+-   I then tokenize the combined text column into individual words using the untest_tokens function from tidy text and create blm_words.
+
+-   I remove all the stop words and irrelevant words like http, amp, etc.
+
+```{r Load packages}
+
+library(httr)
+library(jsonlite)
+library(dplyr)
+library(tidytext)
+library(ggplot2)
+library(wordcloud)
+```
+
+```{r}
+#NewsAPI Key
+
+api_key <- "32f8aaf726424be587b398259c0f963c"
+```
+
+```{r Gather BLM articles from NewsAPI}
+fetch_articles <- function(query, api_key, language = "en", page_size = 100, pages = 1) {
+  articles <- data.frame()
+  
+  for (page in 1:pages) {
+    # Make the API request
+    response <- GET(
+      url = "https://newsapi.org/v2/everything",
+      query = list(
+        q = query,
+        language = language,
+        pageSize = page_size,
+        page = page,
+        apiKey = api_key
+      )
+    )
+    
+    # Parse the JSON response
+    data <- fromJSON(content(response, as = "text"), flatten = TRUE)
+    
+    # Check if there are articles and bind them to the main dataframe
+    if (!is.null(data$articles)) {
+      articles <- bind_rows(articles, data$articles)
+    }
+  }
+  return(articles)
+}
+
+blm_articles <- fetch_articles("Black Lives Matter protests", api_key, pages = 5)
+
+# Combine title, description, and content for text analysis
+blm_articles <- blm_articles %>% 
+  mutate(text = paste(title, description, content, sep = " ")) %>%
+  select(source.name, text)  # Keep only the source name and text
+
+# Unnest tokens (split text into individual words)
+blm_words <- blm_articles %>%
+  unnest_tokens(word, text)
+
+# Remove stopwords and custom irrelevant words
+data("stop_words")
+irrelevant_words <- c("li", "chars", "amp", "watch", "https", "t.co", "rt", "whats")  # Add any other irrelevant words here
+
+```
+
+```{r remove stop words}
+blm_words <- blm_words %>%
+  anti_join(stop_words, by = "word") %>%   # Remove common stopwords
+  filter(!word %in% irrelevant_words) %>%  # Remove custom irrelevant words
+  filter(nchar(word) > 2)                  # Remove short words (e.g., "li")
+```
+
+Here I begin to build a word count to calculate the frequencies across all of the articles. Then I generate a word cloud that visualizes the most frequent words.
+
+-   I also group the word frequencies by the news source as well. I looped through each news source to generate individual word clouds, visualizing how different outlets emphasize different terms and words.
+
+```{r}
+# Count word frequency for overall word cloud
+word_counts <- blm_words %>%
+  count(word, sort = TRUE)
+
+# Generate the word cloud for all articles
+set.seed(1234)
+wordcloud(words = word_counts$word, freq = word_counts$n, min.freq = 2,
+          max.words = 100, random.order = FALSE, rot.per = 0.35,
+          colors = brewer.pal(8, "Dark2"))
+```
+
+```{r}
+library(ggplot2)
+# Count word frequency by source
+word_counts_by_source <- blm_words %>%
+  group_by(source.name) %>%
+  count(word, sort = TRUE)
+
+# Loop through each source to create individual word clouds
+sources <- unique(blm_words$source.name)
+for (source in sources) {
+  source_words <- word_counts_by_source %>% filter(source.name == source)
+  print(paste("Word Cloud for", source))
+  wordcloud(words = source_words$word, freq = source_words$n, min.freq = 2,
+            max.words = 100, random.order = FALSE, rot.per = 0.35,
+            colors = brewer.pal(8, "Dark2"))
+}
+```
+
+```{r}
+# Define a list of highly recognized news outlets
+recognized_sources <- c("USA Today", "BBC News", "NBC News", "The Atlantic", 
+                        "MSNBC", "Boston Herald", "The New Yorker")
+
+# Count word frequency by source
+word_counts_by_source <- blm_words %>%
+  group_by(source.name) %>%
+  count(word, sort = TRUE)
+
+# Filter for recognized sources only
+filtered_sources <- word_counts_by_source %>%
+  filter(source.name %in% recognized_sources)
+
+# Loop through each recognized source to create individual word clouds
+for (source in recognized_sources) {
+  source_words <- filtered_sources %>% filter(source.name == source)
+  if (nrow(source_words) > 0) {  # Check if there are words for the source
+    print(paste("Word Cloud for", source))
+    wordcloud(words = source_words$word, 
+              freq = source_words$n, 
+              min.freq = 1,                  # Include all words with at least 1 occurrence
+              max.words = 50,                # Display fewer words to prevent overcrowding
+              random.order = FALSE, 
+              rot.per = 0.35, 
+              scale = c(1.75, 0.3),             # Adjust word size scaling
+              colors = brewer.pal(8, "Dark2"))
+  } else {
+    print(paste("No data available for", source))
+  }
+}
+
+```
+
+Here is where I created a Bar Plot to visualize the top words frequencies
+
+```{r}
+# Optional: Top Words Bar Plot
+top_words <- word_counts %>% top_n(10, n)
+
+ggplot(top_words, aes(x = reorder(word, n), y = n)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  coord_flip() +
+  labs(title = "Top 10 Most Frequent Words in BLM Protest Coverage",
+       x = "Words", y = "Frequency")
+```
+
+Lastly, I conduct a sentiment analysis. Using Bing Lexicon, I match words from the tokenized blm_words with the bing sentiment lexicon, which classifies words as positive or negative. It counts the number of positive and negative words in the dataset.
+
+-   The bar chart shows the distribution of positive and negative sentiment words across the entire corpus.
+
+```{r}
+# Assuming 'blm_words' contains the tokenized and cleaned words
+# Perform sentiment analysis using the Bing lexicon
+bing_scores <- blm_words %>%
+  inner_join(get_sentiments("bing"), by = "word") %>%  # Match words with Bing sentiment lexicon
+  group_by(sentiment) %>%                             # Group by sentiment (positive/negative)
+  summarise(count = n())                              # Count occurrences of each sentiment
+
+# Create a bar chart of sentiment counts
+ggplot(bing_scores, aes(x = sentiment, y = count, fill = sentiment)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Sentiment Analysis of BLM Protest Coverage",
+       x = "Sentiment",
+       y = "Count") +
+  theme_minimal()
+```
