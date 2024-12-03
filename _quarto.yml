@@ -10,6 +10,9 @@ website:
         text: "Home"
       - href: about.qmd
         text: "About"
+      - href: Final Project GVPT 729B.qmd
+        text: "Final Project GVPT 729B"
+        
 
 format:
   html:

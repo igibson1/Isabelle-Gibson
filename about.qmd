@@ -8,7 +8,7 @@ title: "Research"
 
 Revealing the Scope of the Smaller Donor Revolution: Rising Activism in U.S. State Politics. *With James G. Gimpel*
 
-#### Grants & Fellowships
+### Grants & Fellowships
 
 **Washington State University**
 
@@ -23,3 +23,5 @@ Revealing the Scope of the Smaller Donor Revolution: Rising Activism in U.S. Sta
     -   Conducted a pilot survey experiment, Evaluating New Media Consumption and Clarity over the summer of 2021 through the fall of 2021 with 400 respondents nationwide
 
     -   Conduct data analysis and draw conclusions from survey data
+
+### 

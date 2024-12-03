@@ -136,6 +136,18 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<p>My github page for this project <a href="https://github.com/igibson1/GVPT-729B/tree/main/Final%20Project">here</a></p>
+<p>My final project aims to analyze media framing and sentiment in coverage of BLM protest. This project does the following:</p>
+<ol type="1">
+<li>Identify common words/themes across a variety of articles gathered from NewsAPI.</li>
+<li>Visualize the words/themes with word clouds and bar plots</li>
+<li>Conduct a sentiment analysis to provide insights into the tone of the articles overall, negative or positive.</li>
+</ol>
+<p>With my account with NewsAPI I gather multiple articles related to “Black Lives Matter protests”. To prepare the text data for analysis, I combine the title, description, and content fields from the articles into a single column called text for analysis.</p>
+<ul>
+<li><p>I then tokenize the combined text column into individual words using the untest_tokens function from tidy text and create blm_words.</p></li>
+<li><p>I remove all the stop words and irrelevant words like http, amp, etc.</p></li>
+</ul>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
 <pre><code>
@@ -155,18 +167,6 @@ Attaching package: 'dplyr'</code></pre>
 <pre><code>Loading required package: RColorBrewer</code></pre>
 </div>
 </div>
-<p>My github page for this project <a href="https://github.com/igibson1/GVPT-729B/tree/main/Final%20Project">here</a></p>
-<p>My final project aims to analyze media framing and sentiment in coverage of BLM protest. This project does the following:</p>
-<ol type="1">
-<li>Identify common words/themes across a variety of articles gathered from NewsAPI.</li>
-<li>Visualize the words/themes with word clouds and bar plots</li>
-<li>Conduct a sentiment analysis to provide insights into the tone of the articles overall, negative or positive.</li>
-</ol>
-<p>With my account with NewsAPI I gather multiple articles related to “Black Lives Matter protests”. To prepare the text data for analysis, I combine the title, description, and content fields from the articles into a single column called text for analysis.</p>
-<ul>
-<li><p>I then tokenize the combined text column into individual words using the untest_tokens function from tidy text and create blm_words.</p></li>
-<li><p>I remove all the stop words and irrelevant words like http, amp, etc.</p></li>
-</ul>
 <p>Here I begin to build a word count to calculate the frequencies across all of the articles. Then I generate a word cloud that visualizes the most frequent words.</p>
 <ul>
 <li>I also group the word frequencies by the news source as well. I looped through each news source to generate individual word clouds, visualizing how different outlets emphasize different terms and words.</li>

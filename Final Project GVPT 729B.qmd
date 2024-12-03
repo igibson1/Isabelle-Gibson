@@ -121,8 +121,7 @@ for (source in sources) {
 
 ```{r}
 # Define a list of highly recognized news outlets
-recognized_sources <- c("USA Today", "BBC News", "NBC News", "The Atlantic", 
-                        "MSNBC", "Boston Herald", "The New Yorker")
+recognized_sources <- c("USA Today", "BBC News", "NBC News", "The Atlantic", "Boston Herald")
 
 # Count word frequency by source
 word_counts_by_source <- blm_words %>%
